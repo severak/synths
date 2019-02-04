@@ -208,7 +208,7 @@ $(function(){
 	// tick
 	var step = 0;
 	setInterval(function(){
-		_tik = (_tik + 1) % ( 10 / (bpm / 60) );
+		_tik = (_tik + 1) % Math.floor( 10 / (bpm / 60) );
 		if (_tik != 0) return;
 		step = (step + 1) % 8;
 		if (toggled.space) {
