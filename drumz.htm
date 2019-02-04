@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>drum machine / Severák's synths</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="http://tilde.town/~severak/flogiston-tui.css">
+	<meta property="og:title" content="Severák's synths" />
+	<meta property="og:image" content="https://www.gravatar.com/avatar/21621c02d6a6ab7b07b4a6982b6ec68e.jpg?s=300" />
+	<meta property="og:type" content="website" />
+	<meta property="og:description" content="various synths in javascript / html5 / webmidi" />
+	<script src="zepto.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jzz@0.6.6/javascript/JZZ.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny@1.0.4/javascript/JZZ.synth.Tiny.min.js"></script>
+</head>
+<body>
+	<div class="flogiston-page">         
+	<div class="flogiston-article">
+	<h1>drum machine</h1>
+	
+	<div class="keyboard" id="keyboard">
+	<div class="row qwer">
+		<button id="q">Q</button>
+		<button id="w">W</button>
+		<button id="e">E</button>
+		<button id="r">R</button>
+		<button id="t">T</button>
+		<button id="y">Y</button>
+		<button id="u">U</button>
+		<button id="i">I</button>
+		<span>tom</span>
+	</div>
+	<div class="row asdf">
+		<button id="a">A</button>
+		<button id="s">S</button>
+		<button id="d">D</button>
+		<button id="f">F</button>
+		<button id="g">G</button>
+		<button id="h">H</button>
+		<button id="j">J</button>
+		<button id="k">K</button>
+		<span>snare</span>
+	</div>
+	<div class="row zxcv">
+		<button id="z">Z</button>
+		<button id="x">X</button>
+		<button id="c">C</button>
+		<button id="v">V</button>
+		<button id="b">B</button>
+		<button id="n">N</button>
+		<button id="m">M</button>
+		<button id="comma">,</button>
+		<span>clap</span>
+	</div>
+	<div>
+		<button id="space">play / pause</button>
+	</div>
+	</div>
+
+	<hr>
+	<p>just one of <a href="index.htm">Severák's synths</a></p>
+	
+	
+<style>
+.keyboard .row { padding-bottom: 0.5em; }
+.keyboard button { border: 1px solid lightgrey; color: lightgrey; background-color: darkblue;  border-radius: 1em; width: 2em; height: 2em; }
+.keyboard button.on { background-color: green; }
+.keyboard #space { width: 20em; }
+</style>
+
+<script>
+JZZ.synth.Tiny.register('Synth');
+
+$(function(){
+	// key on keyboard -> letter
+	var keymap = {
+		KeyQ: 'q',
+		KeyW: 'w',
+		KeyE: 'e',
+		KeyR: 'r',
+		KeyT: 't',
+		KeyY: 'y',
+		KeyU: 'u',
+		KeyI: 'i',
+		KeyA: 'a',
+		KeyS: 's',
+		KeyD: 'd',
+		KeyF: 'f',
+		KeyG: 'g',
+		KeyH: 'h',
+		KeyJ: 'j',
+		KeyK: 'k',
+		KeyZ: 'z',
+		KeyX: 'x',
+		KeyC: 'c',
+		KeyV: 'v',
+		KeyB: 'b',
+		KeyN: 'n',
+		KeyM: 'm',
+		Comma: 'comma',
+		Space: 'space',
+	};
+	
+	var keyord = [
+		['q', 'w', 'e', 'r', 't', 'y', 'u', 'i'],
+		['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'],
+		['z', 'x', 'c', 'v', 'b', 'n', 'm', 'comma'],
+	];
+
+	// what is toggled
+	var toggled = {};
+	
+	var _keyElem = {};
+	function toggle(k)
+	{
+		toggled[k] = !toggled[k];
+		if (!_keyElem[k]) _keyElem[k] = $('#'+k);
+		if (toggled[k]) {
+			_keyElem[k].addClass('on');
+		} else {
+			_keyElem[k].removeClass('on');
+		}
+	}
+	
+	$('#keyboard').on('click', 'button', function(e){
+		toggle(e.target.id);
+	});
+	
+	var step = 0;
+	$(document).on('keyup', function(e){
+		
+		if (keymap[e.code]) {
+			var k = keymap[e.code];
+			toggle(k);
+		}
+	});
+	
+	JZZ.synth.Tiny.register('Tiny Synth');
+	
+	// MIDI out
+	var mout = JZZ().openMidiOut();
+	
+	// tick
+	setInterval(function(){
+		step = (step + 1) % 8;
+		if (toggled.space) {
+			if (toggled[keyord[0][step]]) {
+				mout.noteOn(9, 45);
+			}
+		
+			if (toggled[keyord[1][step]]) {
+				mout.noteOn(9, 51);
+			}
+			
+			if (toggled[keyord[2][step]]) {
+				mout.noteOn(9, 39);
+			}
+			
+			// mout.noteOn(9, 34);
+		}
+		
+		
+		
+	}, 500);
+	
+	
+	window.drumz = {
+		toggled : toggled,
+		keymap: keymap,
+		mout: mout
+	};
+});
+
+</script>
+
+
+	</div>
+	</div>
+</body>
+</html>
