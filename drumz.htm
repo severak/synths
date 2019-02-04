@@ -96,6 +96,7 @@
 	</div>
 	<div>
 		<label>BPM: <input id="bpm" type="number" min="1" max="600" value="120"></label>
+		<label>metronome <input id="metronome" type="checkbox" value="1"></label>
 	</div>
 	</div>
 
@@ -186,6 +187,12 @@ $(function(){
 		instr[e.target.getAttribute('data-ord')] = $(e.target).val();
 	});
 	
+	
+	var metronome = false;
+	$('#metronome').on('change', function(){
+		metronome = $('#metronome').prop('checked');
+	});
+	
 	// MIDI out
 	var mout = JZZ().openMidiOut();
 	
@@ -217,19 +224,11 @@ $(function(){
 				mout.noteOn(9, instr[2]);
 			}
 			
-			// mout.noteOn(9, 34);
+			if (metronome) {
+				mout.noteOn(9, 34);
+			}
 		}
-		
-		
-		
 	}, 100);
-	
-	
-	window.drumz = {
-		toggled : toggled,
-		keymap: keymap,
-		mout: mout
-	};
 });
 
 </script>
