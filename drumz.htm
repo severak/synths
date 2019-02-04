@@ -91,9 +91,11 @@
 			<option value="42">closed hihat</option>
 		</select>
 	</div>
-	<div>
+	<div class="row">
 		<button id="space">play / pause</button>
-		<!--- <label>BPM: <input id="bpm" type="number" min="1" max="800" value="120"></label> -->
+	</div>
+	<div>
+		<label>BPM: <input id="bpm" type="number" min="1" max="600" value="120"></label>
 	</div>
 	</div>
 
@@ -171,7 +173,7 @@ $(function(){
 		toggle(e.target.id);
 	});
 	
-	var step = 0;
+	
 	$(document).on('keyup', function(e){
 		
 		if (keymap[e.code]) {
@@ -181,14 +183,26 @@ $(function(){
 	});
 	
 	$('.instrument').on('change', function(e){
-		instr[e.target.getAttribute('data-ord')] = e.target.value;
+		instr[e.target.getAttribute('data-ord')] = $(e.target).val();
 	});
 	
 	// MIDI out
 	var mout = JZZ().openMidiOut();
 	
+	// BPM
+	var _tik = 0;
+	var bpm = 120;
+	
+	$('#bpm').on('change', function(){
+		bpm = $('#bpm').val();
+		_tik = 0;
+	});
+	
 	// tick
+	var step = 0;
 	setInterval(function(){
+		_tik = (_tik + 1) % ( 10 / (bpm / 60) );
+		if (_tik != 0) return;
 		step = (step + 1) % 8;
 		if (toggled.space) {
 			if (toggled[keyord[0][step]]) {
@@ -208,7 +222,7 @@ $(function(){
 		
 		
 		
-	}, 500);
+	}, 100);
 	
 	
 	window.drumz = {
