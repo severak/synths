@@ -28,7 +28,20 @@
 		<button id="y">Y</button>
 		<button id="u">U</button>
 		<button id="i">I</button>
-		<span>tom</span>
+		<select class="instrument" data-ord="0">
+			<option value="36">bass</option>
+			<option value="40">snare</option>
+			<option value="45" selected >low tom</option>
+			<option value="64">low conga</option>
+			<option value="37">rimshot</option>
+			<option value="75">claves</option>
+			<option value="70">maraca</option>
+			<option value="39">handclap</option>
+			<option value="56">cowbell</option>
+			<option value="49">cymbal</option>
+			<option value="46">open hihat</option>
+			<option value="42">closed hihat</option>
+		</select>
 	</div>
 	<div class="row asdf">
 		<button id="a">A</button>
@@ -39,7 +52,20 @@
 		<button id="h">H</button>
 		<button id="j">J</button>
 		<button id="k">K</button>
-		<span>snare</span>
+		<select class="instrument"  data-ord="1">
+			<option value="36">bass</option>
+			<option value="40" selected>snare</option>
+			<option value="45">low tom</option>
+			<option value="64">low conga</option>
+			<option value="37">rimshot</option>
+			<option value="75">claves</option>
+			<option value="70">maraca</option>
+			<option value="39">handclap</option>
+			<option value="56">cowbell</option>
+			<option value="49">cymbal</option>
+			<option value="46">open hihat</option>
+			<option value="42">closed hihat</option>
+		</select>
 	</div>
 	<div class="row zxcv">
 		<button id="z">Z</button>
@@ -50,10 +76,24 @@
 		<button id="n">N</button>
 		<button id="m">M</button>
 		<button id="comma">,</button>
-		<span>clap</span>
+		<select class="instrument"  data-ord="3">
+			<option value="36" selected>bass</option>
+			<option value="40">snare</option>
+			<option value="45">low tom</option>
+			<option value="64">low conga</option>
+			<option value="37">rimshot</option>
+			<option value="75">claves</option>
+			<option value="70">maraca</option>
+			<option value="39">handclap</option>
+			<option value="56">cowbell</option>
+			<option value="49">cymbal</option>
+			<option value="46">open hihat</option>
+			<option value="42">closed hihat</option>
+		</select>
 	</div>
 	<div>
 		<button id="space">play / pause</button>
+		<!--- <label>BPM: <input id="bpm" type="number" min="1" max="800" value="120"></label> -->
 	</div>
 	</div>
 
@@ -66,6 +106,9 @@
 .keyboard button { border: 1px solid lightgrey; color: lightgrey; background-color: darkblue;  border-radius: 1em; width: 2em; height: 2em; }
 .keyboard button.on { background-color: green; }
 .keyboard #space { width: 20em; }
+
+
+select, input { border: 1px solid lightgrey; color: lightgrey; background-color: darkblue; }
 </style>
 
 <script>
@@ -106,6 +149,8 @@ $(function(){
 		['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'],
 		['z', 'x', 'c', 'v', 'b', 'n', 'm', 'comma'],
 	];
+	
+	var instr = [45, 40, 36];
 
 	// what is toggled
 	var toggled = {};
@@ -135,7 +180,9 @@ $(function(){
 		}
 	});
 	
-	JZZ.synth.Tiny.register('Tiny Synth');
+	$('.instrument').on('change', function(e){
+		instr[e.target.getAttribute('data-ord')] = e.target.value;
+	});
 	
 	// MIDI out
 	var mout = JZZ().openMidiOut();
@@ -145,15 +192,15 @@ $(function(){
 		step = (step + 1) % 8;
 		if (toggled.space) {
 			if (toggled[keyord[0][step]]) {
-				mout.noteOn(9, 45);
+				mout.noteOn(9, instr[0]);
 			}
 		
 			if (toggled[keyord[1][step]]) {
-				mout.noteOn(9, 51);
+				mout.noteOn(9, instr[1]);
 			}
 			
 			if (toggled[keyord[2][step]]) {
-				mout.noteOn(9, 39);
+				mout.noteOn(9, instr[2]);
 			}
 			
 			// mout.noteOn(9, 34);
