@@ -10,13 +10,13 @@
 	<meta property="og:type" content="website" />
 	<meta property="og:description" content="various synths in javascript / html5 / webmidi" />
 	<script src="zepto.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/jzz@0.6.6/javascript/JZZ.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jzz"></script>
 	<script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny@1.0.4/javascript/JZZ.synth.Tiny.min.js"></script>
 </head>
 <body>
 	<div class="flogiston-page">         
 	<div class="flogiston-article">
-	<h1>drum machine</h1>
+	<h1>8*3 drum machine</h1>
 	
 	<div class="keyboard" id="keyboard">
 	<div class="row qwer">
@@ -97,11 +97,14 @@
 	<div>
 		<label>BPM: <input id="bpm" type="number" min="1" max="600" value="120"></label>
 		<label>metronome <input id="metronome" type="checkbox" value="1"></label>
+		<label>MIDI Out: <select id=selectMidiOut></select></label>
 	</div>
 	</div>
 
 	<hr>
 	<p>just one of <a href="index.htm">Severák's synths</a></p>
+	
+	<p>Created with wonderful <a href="https://www.jazz-soft.net/doc/JZZ/">JZZ lib from jazz soft</a>.</p>
 	
 	
 <style>
@@ -117,7 +120,9 @@ button:focus { border-style: double; }
 </style>
 
 <script>
-JZZ.synth.Tiny.register('Synth');
+// fallback synth
+JZZ.synth.Tiny.register('JZZ Tiny Synth');
+		
 
 $(function(){
 	// key on keyboard -> letter
@@ -183,6 +188,7 @@ $(function(){
 		if (keymap[e.code]) {
 			var k = keymap[e.code];
 			toggle(k);
+			return false; // preventDefault
 		}
 	});
 	
@@ -196,8 +202,10 @@ $(function(){
 		metronome = $('#metronome').prop('checked');
 	});
 	
-	// MIDI out
-	var mout = JZZ().openMidiOut();
+	// MIDI through
+	var through = JZZ.Widget();
+
+	// TODO: fix this - this is source of major headache
 	
 	// BPM
 	var _tik = 0;
@@ -216,22 +224,70 @@ $(function(){
 		step = (step + 1) % 8;
 		if (toggled.space) {
 			if (toggled[keyord[0][step]]) {
-				mout.noteOn(9, instr[0]);
+				through.noteOn(9, instr[0]);
 			}
 		
 			if (toggled[keyord[1][step]]) {
-				mout.noteOn(9, instr[1]);
+				through.noteOn(9, instr[1]);
 			}
 			
 			if (toggled[keyord[2][step]]) {
-				mout.noteOn(9, instr[2]);
+				through.noteOn(9, instr[2]);
 			}
 			
 			if (metronome) {
-				mout.noteOn(9, 34);
+				through.noteOn(9, 34);
 			}
 		}
 	}, 100);
+	
+	
+	
+	// populate MIDI output select
+	JZZ().and(function(){
+		
+		var i;
+		for (i = 0; i < this.info().outputs.length; i++) {
+			selectMidiOut[i] = new Option(this.info().outputs[i].name);
+		}
+		if (!i) {
+			selectMidiOut[i] = new Option('Not available');
+		}
+	});
+	
+	// changing MIDI output
+	var midiOutName = 'Not available';
+	var midiOutPort;
+	
+	function setListbox(lb, s) {
+		for (var i = 0; i < lb.options.length; i++) if (lb.options[i].value == s) lb.options[i].selected = 1;
+	}
+	
+	function onMidiOutSuccess() {
+		if (midiOutPort) {
+			midiOutPort.close();
+		}
+		midiOutPort = this;
+		through.connect(this);
+		midiOutName = this.name();
+		setListbox(selectMidiOut, midiOutName);
+	}
+
+	function onMidiOutFail() {
+		if (midiOutPort) through.connect(midiOutPort);
+		setListbox(selectMidiOut, midiOutName);
+	}
+	
+	JZZ().openMidiOut().or(onMidiOutFail).and(onMidiOutSuccess);
+	
+	function changeMidiOut() {
+		var name = selectMidiOut.options[selectMidiOut.selectedIndex].value;
+		if (name == midiOutName) return;
+		if (midiOutPort) through.disconnect(midiOutPort);
+		JZZ().openMidiOut(name).or(onMidiOutFail).and(onMidiOutSuccess);
+	}
+	
+	selectMidiOut.addEventListener('change', changeMidiOut);
 });
 
 </script>
