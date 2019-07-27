@@ -9,7 +9,7 @@
 	<meta property="og:image" content="https://www.gravatar.com/avatar/21621c02d6a6ab7b07b4a6982b6ec68e.jpg?s=300" />
 	<meta property="og:type" content="website" />
 	<meta property="og:description" content="various synths in javascript / html5 / webmidi" />
-	<script src="zepto.js"></script>
+	<script src="uboot.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/jzz"></script>
 	<script src="https://cdn.jsdelivr.net/npm/jzz-synth-tiny@1.0.4/javascript/JZZ.synth.Tiny.min.js"></script>
 </head>
@@ -124,7 +124,7 @@ button:focus { border-style: double; }
 JZZ.synth.Tiny.register('JZZ Tiny Synth');
 		
 
-$(function(){
+whenReady(function(){
 	// key on keyboard -> letter
 	var keymap = {
 		KeyQ: 'q',
@@ -169,21 +169,20 @@ $(function(){
 	function toggle(k)
 	{
 		toggled[k] = !toggled[k];
-		if (!_keyElem[k]) _keyElem[k] = $('#'+k);
+		if (!_keyElem[k]) _keyElem[k] = gebi(k);
 		if (toggled[k]) {
-			_keyElem[k].addClass('on');
+			addClass(_keyElem[k] ,'on');
 		} else {
-			_keyElem[k].removeClass('on');
+			delClass(_keyElem[k] ,'on');
 		}
 	}
 	
-	$('#keyboard').on('click', 'button', function(e){
+	on('keyboard', 'click', 'button',  function(e){
 		toggle(e.target.id);
 		e.target.blur();
 	});
 	
-	
-	$(document).on('keyup', function(e){
+	on(document, 'keyup', function(e){
 		
 		if (keymap[e.code]) {
 			var k = keymap[e.code];
@@ -192,14 +191,14 @@ $(function(){
 		}
 	});
 	
-	$('.instrument').on('change', function(e){
-		instr[e.target.getAttribute('data-ord')] = $(e.target).val();
+	on('instrument', 'change', 'select', function(e){
+		instr[e.target.getAttribute('data-ord')] = e.target.value;
 	});
 	
 	
 	var metronome = false;
-	$('#metronome').on('change', function(){
-		metronome = $('#metronome').prop('checked');
+	on('metronome', 'change', function(){
+		metronome = gebi('metronome').checked;
 	});
 	
 	// MIDI through
@@ -211,10 +210,12 @@ $(function(){
 	var _tik = 0;
 	var bpm = 120;
 	
+	/*
 	$('#bpm').on('change', function(){
 		bpm = $('#bpm').val();
 		_tik = 0;
 	});
+	*/
 	
 	// tick
 	var step = 0;
