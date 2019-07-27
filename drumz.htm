@@ -112,6 +112,8 @@
 
 
 select, input { border: 1px solid lightgrey; color: lightgrey; background-color: darkblue; }
+
+button:focus { border-style: double; }
 </style>
 
 <script>
@@ -172,6 +174,7 @@ $(function(){
 	
 	$('#keyboard').on('click', 'button', function(e){
 		toggle(e.target.id);
+		e.target.blur();
 	});
 	
 	
