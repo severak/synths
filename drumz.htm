@@ -154,16 +154,16 @@ whenReady(function(){
 		Space: 'space',
 	};
 	
-	var keyord = [
+	keyord = [
 		['q', 'w', 'e', 'r', 't', 'y', 'u', 'i'],
 		['a', 's', 'd', 'f', 'g', 'h', 'j', 'k'],
 		['z', 'x', 'c', 'v', 'b', 'n', 'm', 'comma'],
 	];
 	
-	var instr = [45, 40, 36];
+	instr = [45, 40, 36];
 
 	// what is toggled
-	var toggled = {};
+	toggled = {};
 	
 	var _keyElem = {};
 	function toggle(k)
@@ -202,28 +202,56 @@ whenReady(function(){
 	});
 	
 	// MIDI through
-	var through = JZZ.Widget();
+	through = JZZ.Widget();
 
-	// TODO: fix this - this is source of major headache
-	
-	// BPM
-	var _tik = 0;
-	var bpm = 120;
-	
-	/*
-	$('#bpm').on('change', function(){
-		bpm = $('#bpm').val();
-		_tik = 0;
-	});
-	*/
-	
-	// tick
+// from https://stackoverflow.com/a/44337628 :
+
+/**
+ * Self-adjusting interval to account for drifting
+ * 
+ * @param {function} workFunc  Callback containing the work to be done
+ *                             for each interval
+ * @param {int}      interval  Interval speed (in milliseconds) - This 
+ * @param {function} errorFunc (Optional) Callback to run if the drift
+ *                             exceeds interval
+ */
+function AdjustingInterval(workFunc, interval, errorFunc) {
+    var that = this;
+    var expected, timeout;
+    this.interval = interval;
+
+    this.start = function() {
+        expected = Date.now() + this.interval;
+        timeout = setTimeout(step, this.interval);
+    }
+
+    this.stop = function() {
+        clearTimeout(timeout);
+    }
+
+    function step() {
+        var drift = Date.now() - expected;
+        if (drift > that.interval) {
+            // You could have some default stuff here too...
+            if (errorFunc) errorFunc();
+        }
+        workFunc();
+        expected += that.interval;
+        timeout = setTimeout(step, Math.max(0, that.interval-drift));
+    }
+}
+
+var intervalError = function() {
+    console.warn('The drift exceeded the interval.');
+};
+
 	var step = 0;
-	setInterval(function(){
-		_tik = (_tik + 1) % Math.floor( 10 / (bpm / 60) );
-		if (_tik != 0) return;
+
+	// scope problems - keyord + toggled + instr + through
+	function tick() {
 		step = (step + 1) % 8;
 		if (toggled.space) {
+			console.log(toggled[keyord[0][step]])
 			if (toggled[keyord[0][step]]) {
 				through.noteOn(9, instr[0]);
 			}
@@ -240,10 +268,19 @@ whenReady(function(){
 				through.noteOn(9, 34);
 			}
 		}
-	}, 100);
+	}
+
+	var ticker = new AdjustingInterval(tick, 1000 / (120/60), intervalError);
 	
+	ticker.start();
 	
-	
+	on('bpm', 'change', function(){
+		var bpm = gebi('bpm').value;
+		ticker.stop();
+		ticker.interval = 1000 / (bpm / 60 );
+		ticker.start();
+	});
+
 	// populate MIDI output select
 	JZZ().and(function(){
 		
