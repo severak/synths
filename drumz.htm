@@ -91,8 +91,11 @@
 			<option value="42">closed hihat</option>
 		</select>
 	</div>
+	</div>
+	<div class="keyboard">
 	<div class="row">
 		<button id="space">play / pause</button>
+	</div>
 	</div>
 	<div>
 		<label>BPM: <input id="bpm" type="number" min="1" max="600" value="120"></label>
@@ -111,6 +114,7 @@
 .keyboard .row { padding-bottom: 0.5em; }
 .keyboard button { border: 1px solid lightgrey; color: lightgrey; background-color: darkblue;  border-radius: 1em; width: 2em; height: 2em; }
 .keyboard button.on { background-color: green; }
+.keyboard button.current { border: 1px solid red; }
 .keyboard #space { width: 20em; }
 
 
@@ -249,9 +253,10 @@ var intervalError = function() {
 
 	// scope problems - keyord + toggled + instr + through
 	function tick() {
+		delClass(keyord[0][step], 'current');
 		step = (step + 1) % 8;
 		if (toggled.space) {
-			console.log(toggled[keyord[0][step]])
+			addClass(keyord[0][step], 'current');
 			if (toggled[keyord[0][step]]) {
 				through.noteOn(9, instr[0]);
 			}
@@ -272,7 +277,14 @@ var intervalError = function() {
 
 	var ticker = new AdjustingInterval(tick, 1000 / (120/60), intervalError);
 	
-	ticker.start();
+	on('space', 'click', function(){
+		// TODO - we start on no 0!
+		// TODO - starting stopnig by keyboard
+		toggle('space');
+		gebi('space').blur();
+		ticker.start();
+	});
+	
 	
 	on('bpm', 'change', function(){
 		var bpm = gebi('bpm').value;
